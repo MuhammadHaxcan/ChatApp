@@ -1,0 +1,1 @@
+A simple chat application built with Node.js and Express.js, utilizing WebSockets for real-time communication and EJS for templating.

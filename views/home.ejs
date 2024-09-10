@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    /* Chat container styling */
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 70vh; /* Adjust height as needed */
+    }
+    .chat-wrapper {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .online-users {
+      width: 100%;
+      max-width: 300px;
+      border-right: 1px solid #ddd;
+      overflow-y: auto;
+    }
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 10px; /* Padding for chat area */
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px; /* Extra padding for message area */
+      border-bottom: 1px solid #ddd;
+    }
+    .chat-input {
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      background-color: #f8f9fa;
+    }
+    .online-users-label {
+      display: none;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #ddd;
+      cursor: pointer;
+    }
+    .online-users-list {
+      display: none;
+    }
+    @media (max-width: 768px) {
+      .online-users {
+        display: none;
+      }
+      .online-users-label {
+        display: block;
+      }
+      .online-users-list {
+        display: block;
+        padding: 10px;
+      }
+      .chat-wrapper {
+        flex-direction: column;
+      }
+      .chat-area {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <div class="container mt-4">
+    <h1><%= title %></h1>
+    <div class="chat-container">
+      <div class="chat-wrapper">
+        <!-- Online Users Sidebar -->
+        <div class="online-users p-3">
+          <h4>Online Users</h4>
+          <ul class="list-group">
+            <!-- Example user list items -->
+            <li class="list-group-item">User 1</li>
+            <li class="list-group-item">User 2</li>
+            <li class="list-group-item">User 3</li>
+            <!-- Add more users dynamically -->
+          </ul>
+        </div>
+        <!-- Chat Area -->
+        <div class="chat-area">
+          <div class="online-users-label">
+            Online Users
+          </div>
+          <div class="online-users-list">
+            <ul class="list-group">
+              <!-- Example user list items -->
+              <li class="list-group-item">User 1</li>
+              <li class="list-group-item">User 2</li>
+              <li class="list-group-item">User 3</li>
+              <!-- Add more users dynamically -->
+            </ul>
+          </div>
+          <div class="chat-messages">
+            <!-- Example chat messages -->
+            <div class="message mb-2">
+              <strong>User 1:</strong> Hello!
+            </div>
+            <div class="message mb-2">
+              <strong>User 2:</strong> Hi there!
+            </div>
+            <!-- Add more messages dynamically -->
+          </div>
+          <div class="chat-input">
+            <form>
+              <div class="form-group mb-0">
+                <input type="text" class="form-control" placeholder="Type your message here..." />
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

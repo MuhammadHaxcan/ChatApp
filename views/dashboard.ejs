@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Additional styling for the dashboard */
+        .dashboard-container {
+            padding: 20px;
+        }
+        .search-section, .requests-section, .friends-section {
+            margin-bottom: 20px;
+        }
+        .search-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .search-container input {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .requests-section .list-group-item, .friends-section .list-group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .requests-section .btn, .friends-section .btn {
+            margin-left: 10px;
+        }
+        .no-data {
+            text-align: center;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <%- include('partials/header') %>
+
+    <div class="container dashboard-container">
+        <h1><%= title %></h1>
+        
+        <!-- Search Users Section -->
+        <div class="search-section mb-4">
+            <h2>Search Users</h2>
+            <div class="search-container">
+                <input type="text" class="form-control" id="search-input" placeholder="Search for users..." />
+                <button class="btn btn-primary btn-sm">Search</button>
+            </div>
+            <div id="search-results">
+                <!-- Search results will be dynamically injected here -->
+                <!-- Example result item -->
+                <!-- <div class="list-group-item">UserName <button class="btn btn-primary btn-sm">Send Request</button></div> -->
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Friend Requests Section -->
+            <div class="col-md-6">
+                <div class="requests-section">
+                    <h2>Friend Requests</h2>
+                    <ul class="list-group">
+                        <!-- Placeholder for friend requests -->
+                        <!-- Example request item -->
+                        <!-- <li class="list-group-item">UserName <button class="btn btn-primary btn-sm">Send Request</button></li> -->
+                        <li class="list-group-item no-data">No pending requests</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Friends List Section -->
+            <div class="col-md-6">
+                <div class="friends-section">
+                    <h2>Friends</h2>
+                    <ul class="list-group">
+                        <!-- Placeholder for friends list -->
+                        <!-- Example friend item -->
+                        <!-- <li class="list-group-item">UserName</li> -->
+                        <li class="list-group-item no-data">No friends yet</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="/js/dashboardscript.js"></script>
+</body>
+</html>
