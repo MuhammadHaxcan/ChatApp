@@ -89,7 +89,7 @@
         </div>
         <!-- Chat Area -->
         <div class="chat-area">
-          <div class="online-users-label">
+          <div class="online-users-label" id="toggleFriends">
             Friends
           </div>
           <div class="chat-messages">
@@ -192,6 +192,13 @@
               const friendId = this.getAttribute('data-friend-id');
               loadMessages(friendId);
           });
+      });
+
+      // Toggle friends dropdown on smaller screens
+      const toggleFriends = document.getElementById('toggleFriends');
+      toggleFriends.addEventListener('click', function () {
+          const onlineUsers = document.querySelector('.online-users');
+          onlineUsers.style.display = onlineUsers.style.display === 'block' ? 'none' : 'block';
       });
   });
 

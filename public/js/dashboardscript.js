@@ -15,10 +15,12 @@ $(document).ready(function() {
                         data.forEach(user => {
                             const buttonClass = user.requestSent ? 'btn-warning' : 'btn-primary';
                             const buttonText = user.requestSent ? 'Cancel Request' : 'Send Request';
+                            const mutualFriendsText = user.mutualFriendsCount ? `${user.mutualFriendsCount} Mutual Friends` : 'No Mutual Friends';
 
                             resultsContainer.append(
                                 `<div class="list-group-item" data-user-id="${user._id}">
                                     ${user.username} 
+                                    <span class="mutual-friends">${mutualFriendsText}</span>
                                     <button class="btn ${buttonClass} btn-sm send-request-btn">${buttonText}</button>
                                 </div>`
                             );

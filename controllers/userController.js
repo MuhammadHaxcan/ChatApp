@@ -8,50 +8,6 @@ const handleError = (err, res) => {
   res.status(500).json({ message: 'Server error' });
 };
 
-// Search for users excluding the current user, friends, and users who have sent requests
-exports.searchUser = async (req, res) => {
-  const { query } = req.query;
-  const senderId = req.user._id;
-
-  if (!query) {
-    return res.status(400).json({ message: 'Query parameter is required' });
-  }
-
-  try {
-    // Run all necessary queries concurrently
-    const [friends, incomingRequests, users, sentRequests] = await Promise.all([
-      UserFriend.find({ $or: [{ user1: senderId }, { user2: senderId }] }).lean(),
-      FriendRequest.find({ receiver: senderId, status: 'Pending' }).select('sender').lean(),
-      User.find({
-        _id: { $ne: senderId },
-        username: { $regex: query, $options: 'i' }
-      }).limit(5).lean(),
-      FriendRequest.find({ sender: senderId, status: 'Pending' }).select('receiver').lean()
-    ]);
-
-    const friendIds = friends.map(friend =>
-      friend.user1.toString() === senderId.toString() ? friend.user2.toString() : friend.user1.toString()
-    );
-
-    const requestSenderIds = incomingRequests.map(request => request.sender.toString());
-
-    // Filter out friends and users who have sent requests from the search results
-    const filteredUsers = users.filter(user => 
-      !friendIds.includes(user._id.toString()) && !requestSenderIds.includes(user._id.toString())
-    );
-
-    // Mark users with a sent request
-    const usersWithStatus = filteredUsers.map(user => ({
-      ...user,
-      requestSent: sentRequests.some(request => request.receiver.toString() === user._id.toString())
-    }));
-
-    res.json(usersWithStatus);
-  } catch (err) {
-    handleError(err, res);
-  }
-};
-
 // Send a friend request
 exports.sendFriendRequest = async (req, res) => {
   const { receiverId } = req.body;
@@ -182,6 +138,84 @@ exports.getFriends = async (req, res) => {
     const friendUsers = await User.find({ _id: { $in: friendIds } }).select('username').lean();
 
     res.json(friendUsers);
+  } catch (err) {
+    handleError(err, res);
+  }
+};
+
+
+// Function to find the mutual friends count between two users
+const findMutualFriendsCount = async (userId1, userId2) => {
+  try {
+    const [friendsOfUser1, friendsOfUser2] = await Promise.all([
+      UserFriend.find({
+        $or: [{ user1: userId1 }, { user2: userId1 }]
+      }).lean(),
+      UserFriend.find({
+        $or: [{ user1: userId2 }, { user2: userId2 }]
+      }).lean()
+    ]);
+
+    const user1FriendsIds = friendsOfUser1.map(friend =>
+      friend.user1.toString() === userId1.toString() ? friend.user2.toString() : friend.user1.toString()
+    );
+    const user2FriendsIds = friendsOfUser2.map(friend =>
+      friend.user1.toString() === userId2.toString() ? friend.user2.toString() : friend.user1.toString()
+    );
+
+    // Find mutual friends
+    const mutualFriends = user1FriendsIds.filter(friendId => user2FriendsIds.includes(friendId));
+
+    return mutualFriends.length;
+  } catch (error) {
+    console.error('Error finding mutual friends:', error);
+    return 0; // Return 0 if there's an error
+  }
+};
+
+// Search for users excluding the current user, friends, and users who have sent requests
+exports.searchUser = async (req, res) => {
+  const { query } = req.query;
+  const senderId = req.user._id;
+
+  if (!query) {
+    return res.status(400).json({ message: 'Query parameter is required' });
+  }
+
+  try {
+    // Run all necessary queries concurrently
+    const [friends, incomingRequests, users, sentRequests] = await Promise.all([
+      UserFriend.find({ $or: [{ user1: senderId }, { user2: senderId }] }).lean(),
+      FriendRequest.find({ receiver: senderId, status: 'Pending' }).select('sender').lean(),
+      User.find({
+        _id: { $ne: senderId },
+        username: { $regex: query, $options: 'i' }
+      }).limit(5).lean(),
+      FriendRequest.find({ sender: senderId, status: 'Pending' }).select('receiver').lean()
+    ]);
+
+    const friendIds = friends.map(friend =>
+      friend.user1.toString() === senderId.toString() ? friend.user2.toString() : friend.user1.toString()
+    );
+
+    const requestSenderIds = incomingRequests.map(request => request.sender.toString());
+
+    // Filter out friends and users who have sent requests from the search results
+    const filteredUsers = users.filter(user =>
+      !friendIds.includes(user._id.toString()) && !requestSenderIds.includes(user._id.toString())
+    );
+
+    // Mark users with a sent request and get mutual friends count
+    const usersWithStatus = await Promise.all(filteredUsers.map(async user => {
+      const mutualFriendsCount = await findMutualFriendsCount(senderId, user._id);
+      return {
+        ...user,
+        requestSent: sentRequests.some(request => request.receiver.toString() === user._id.toString()),
+        mutualFriendsCount // Add mutual friends count
+      };
+    }));
+
+    res.json(usersWithStatus);
   } catch (err) {
     handleError(err, res);
   }
