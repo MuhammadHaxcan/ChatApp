@@ -3,130 +3,95 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= title %></title>
+  <title>Welcome to ChatApp</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <style>
-    /* Chat container styling */
-    .chat-container {
-      display: flex;
-      flex-direction: column;
-      height: 70vh; /* Adjust height as needed */
-    }
-    .chat-wrapper {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-    .online-users {
-      width: 100%;
-      max-width: 300px;
-      border-right: 1px solid #ddd;
-      overflow-y: auto;
-    }
-    .chat-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      padding: 10px; /* Padding for chat area */
-    }
-    .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px; /* Extra padding for message area */
-      border-bottom: 1px solid #ddd;
-    }
-    .chat-input {
-      padding: 10px;
-      border-top: 1px solid #ddd;
+    .hero-section {
       background-color: #f8f9fa;
+      padding: 100px 20px;
+      text-align: center;
     }
-    .online-users-label {
-      display: none;
-      padding: 10px;
-      background-color: #f8f9fa;
-      border-bottom: 1px solid #ddd;
-      cursor: pointer;
+    .hero-section h1 {
+      font-family: 'Roboto', sans-serif;
+      font-size: 3rem;
+      color: #343a40;
     }
-    .online-users-list {
-      display: none;
+    .hero-section p {
+      font-size: 1.5rem;
+      color: #6c757d;
     }
-    @media (max-width: 768px) {
-      .online-users {
-        display: none;
-      }
-      .online-users-label {
-        display: block;
-      }
-      .online-users-list {
-        display: block;
-        padding: 10px;
-      }
-      .chat-wrapper {
-        flex-direction: column;
-      }
-      .chat-area {
-        width: 100%;
-      }
+    .cta-buttons {
+      margin-top: 20px;
+    }
+    .cta-buttons .btn {
+      margin: 0 10px;
+      padding: 10px 20px;
+      font-size: 1.2rem;
+    }
+    .features-section {
+      padding: 60px 20px;
+      background-color: #fff;
+      text-align: center;
+    }
+    .features-section h2 {
+      margin-bottom: 40px;
+      font-size: 2.5rem;
+      color: #343a40;
+    }
+    .feature-box {
+      margin-bottom: 30px;
+    }
+    .feature-box h4 {
+      font-size: 1.5rem;
+      color: #343a40;
+    }
+    .feature-box p {
+      color: #6c757d;
+    }
+    .footer {
+      background-color: #343a40;
+      color: #fff;
+      padding: 30px 20px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
+
   <%- include('partials/header') %>
 
-  <div class="container mt-4">
-    <h1><%= title %></h1>
-    <div class="chat-container">
-      <div class="chat-wrapper">
-        <!-- Online Users Sidebar -->
-        <div class="online-users p-3">
-          <h4>Online Users</h4>
-          <ul class="list-group">
-            <!-- Example user list items -->
-            <li class="list-group-item">User 1</li>
-            <li class="list-group-item">User 2</li>
-            <li class="list-group-item">User 3</li>
-            <!-- Add more users dynamically -->
-          </ul>
+  <div class="hero-section">
+    <h1>ChatApp - Where Interests Spark Friendships</h1>
+    <p>Join a community where people connect over shared passions. Meet new friends, explore groups, and chat in real-time!</p>
+    <div class="cta-buttons">
+      <a href="/auth/register" class="btn btn-primary">Join Now</a>
+      <a href="/about" class="btn btn-outline-secondary">Learn More</a>
+    </div>
+  </div>
+
+  <div class="features-section">
+    <h2>Why ChatApp?</h2>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 feature-box">
+          <h4>Interest-Based Groups</h4>
+          <p>Connect with like-minded individuals by joining groups tailored to your interests.</p>
         </div>
-        <!-- Chat Area -->
-        <div class="chat-area">
-          <div class="online-users-label">
-            Online Users
-          </div>
-          <div class="online-users-list">
-            <ul class="list-group">
-              <!-- Example user list items -->
-              <li class="list-group-item">User 1</li>
-              <li class="list-group-item">User 2</li>
-              <li class="list-group-item">User 3</li>
-              <!-- Add more users dynamically -->
-            </ul>
-          </div>
-          <div class="chat-messages">
-            <!-- Example chat messages -->
-            <div class="message mb-2">
-              <strong>User 1:</strong> Hello!
-            </div>
-            <div class="message mb-2">
-              <strong>User 2:</strong> Hi there!
-            </div>
-            <!-- Add more messages dynamically -->
-          </div>
-          <div class="chat-input">
-            <form>
-              <div class="form-group mb-0">
-                <input type="text" class="form-control" placeholder="Type your message here..." />
-              </div>
-            </form>
-          </div>
+        <div class="col-md-4 feature-box">
+          <h4>Smart Friend Suggestions</h4>
+          <p>Find friends who share your hobbies, passions, and values for more engaging conversations.</p>
+        </div>
+        <div class="col-md-4 feature-box">
+          <h4>Real-Time Messaging</h4>
+          <p>Chat in real-time with friends and groups, keeping you connected no matter where you are.</p>
         </div>
       </div>
     </div>
   </div>
+  <div>
+    //add more idea
+    
+  </div>
 
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
