@@ -35,6 +35,7 @@
       overflow-y: auto;
       padding: 20px;
       border-bottom: 1px solid #ddd;
+      max-height: calc(100vh - 200px); /* Adjust for layout responsiveness */
     }
     .chat-input {
       padding: 10px;
@@ -48,19 +49,12 @@
       border-bottom: 1px solid #ddd;
       cursor: pointer;
     }
-    .online-users-list {
-      display: none;
-    }
     @media (max-width: 768px) {
       .online-users {
         display: none;
       }
       .online-users-label {
         display: block;
-      }
-      .online-users-list {
-        display: block;
-        padding: 10px;
       }
       .chat-wrapper {
         flex-direction: column;
@@ -70,7 +64,6 @@
       }
     }
   </style>
-
 </head>
 <body>
   <%- include('partials/header') %>
@@ -114,83 +107,94 @@
     </div>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const userId = "<%= user._id %>"; // Ensure userId is available in the context
-        const chatMessagesDiv = document.querySelector('.chat-messages');
-        const chatForm = document.getElementById('chatForm');
-        const messageInput = document.getElementById('messageInput');
-        let activeFriendId = null; // To track the currently selected friend
-
-        function generateChatUrl(endpoint, friendId) {
-            return `/chat/${endpoint}/${userId}/${friendId}`;
-        }
-
-        async function loadMessages(friendId) {
-            try {
-                const chatUrl = generateChatUrl('getmessages', friendId);
-                console.log('Loading messages from:', chatUrl);
-                const response = await fetch(chatUrl);
-
-                if (!response.ok) throw new Error('Failed to fetch messages.');
-
-                const messages = await response.json();
-
-                chatMessagesDiv.innerHTML = ''; // Clear previous messages
-                messages.forEach(msg => {
-                    const messageElement = document.createElement('div');
-                    messageElement.classList.add('message', 'mb-2');
-                    messageElement.innerHTML = `<strong>${msg.sender.username}:</strong> ${msg.text}`;
-                    chatMessagesDiv.appendChild(messageElement);
-                });
-
-                activeFriendId = friendId; // Set the active friend ID
-            } catch (error) {
-                console.error('Error loading messages:', error);
-            }
-        }
-
-        chatForm.addEventListener('submit', async function (e) {
-            e.preventDefault();
-            const text = messageInput.value.trim();
-            if (!text || !activeFriendId) return;
-
-            const chatUrl = generateChatUrl('sendmessages', activeFriendId);
-            console.log('Sending message to:', chatUrl);
-
-            try {
-                const response = await fetch(chatUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text })
-                });
-
-                if (response.ok) {
-                    messageInput.value = ''; // Clear the input field after sending
-                    console.log('Message sent successfully.');
-                    loadMessages(activeFriendId); // Reload messages after sending
-                } else {
-                    throw new Error('Failed to send message.');
-                }
-            } catch (error) {
-                console.error('Error sending message:', error);
-            }
-        });
-
-        document.querySelectorAll('.friend-item').forEach(item => {
-            item.addEventListener('click', function () {
-                document.querySelectorAll('.friend-item').forEach(friend => friend.classList.remove('active'));
-                this.classList.add('active');
-                const friendId = this.getAttribute('data-friend-id');
-                console.log('Friend item clicked. Friend ID:', friendId);
-                loadMessages(friendId);
-            });
-        });
-    });
-  </script>
-
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const userId = "<%= user._id %>"; // Ensure userId is available in the context
+      const chatMessagesDiv = document.querySelector('.chat-messages');
+      const chatForm = document.getElementById('chatForm');
+      const messageInput = document.getElementById('messageInput');
+      let activeFriendId = null; // To track the currently selected friend
+
+      const socket = io(); // Initialize Socket.io
+
+      // Join the room as soon as the client connects
+      socket.emit('joinRoom', userId);
+
+      // Handle socket connection errors
+      socket.on('connect_error', (err) => {
+          console.error('Socket connection error:', err);
+      });
+
+      function generateChatUrl(endpoint, friendId) {
+          return `/chat/${endpoint}/${userId}/${friendId}`;
+      }
+
+      async function loadMessages(friendId) {
+          try {
+              const chatUrl = generateChatUrl('getmessages', friendId);
+              const response = await fetch(chatUrl);
+
+              if (!response.ok) throw new Error('Failed to fetch messages.');
+
+              const messages = await response.json();
+              chatMessagesDiv.innerHTML = ''; // Clear previous messages
+              messages.forEach(msg => {
+                  const messageElement = document.createElement('div');
+                  messageElement.classList.add('message', 'mb-2');
+                  messageElement.innerHTML = `<strong>${msg.sender.username}:</strong> ${msg.text}`;
+                  chatMessagesDiv.appendChild(messageElement);
+              });
+
+              activeFriendId = friendId; // Set the active friend ID
+              scrollToBottom(); // Scroll to the bottom after loading messages
+          } catch (error) {
+              console.error('Error loading messages:', error);
+          }
+      }
+
+      chatForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          const text = messageInput.value.trim();
+          if (!text || !activeFriendId) return;
+
+          // Emit the message to the server
+          socket.emit('sendMessage', {
+              text,
+              senderId: userId,
+              receiverId: activeFriendId
+          });
+
+          messageInput.value = ''; // Clear the input field after sending
+      });
+
+      // Function to scroll to the latest message
+      function scrollToBottom() {
+          chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+      }
+
+      // Listen for incoming messages
+      socket.on('messageReceived', (message) => {
+          const messageElement = document.createElement('div');
+          messageElement.classList.add('message', 'mb-2');
+          messageElement.innerHTML = `<strong>${message.sender.username}:</strong> ${message.text}`;
+          chatMessagesDiv.appendChild(messageElement);
+          scrollToBottom(); // Scroll to the bottom when a new message arrives
+      });
+
+      document.querySelectorAll('.friend-item').forEach(item => {
+          item.addEventListener('click', function () {
+              document.querySelectorAll('.friend-item').forEach(friend => friend.classList.remove('active'));
+              this.classList.add('active');
+              const friendId = this.getAttribute('data-friend-id');
+              loadMessages(friendId);
+          });
+      });
+  });
+
+  </script>
 </body>
 </html>

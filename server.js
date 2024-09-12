@@ -4,11 +4,14 @@ const passport = require('passport');
 const mongoose = require('mongoose');
 const path = require('path');
 const dotenv = require('dotenv');
+const http = require('http'); // Import http module
+const socketIo = require('socket.io'); // Import socket.io
 
 const defaultRoutes = require('./routes/defaultRoutes');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const socketHandler = require('./socket'); // Import socket handler
 
 const connectDB = require('./config/dbConfig');
 
@@ -16,6 +19,8 @@ dotenv.config();
 require('./config/passport-setup'); // Adjust the path as necessary
 
 const app = express();
+const server = http.createServer(app); // Create HTTP server
+const io = socketIo(server); // Initialize Socket.io with the server
 
 // Connect to DB
 connectDB();
@@ -45,10 +50,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/', defaultRoutes);
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
-app.use('/chat',chatRoutes);
+app.use('/chat', chatRoutes);
 
+// Set up Socket.io
+socketHandler(io); // Pass the io instance to the socket handler
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server running on PORT: ${PORT}`);
 });
