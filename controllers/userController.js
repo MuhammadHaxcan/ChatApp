@@ -1,6 +1,7 @@
 const User = require('../models/UserModel');
 const FriendRequest = require('../models/FriendRequestModel');
 const UserFriend = require('../models/UserFriendModel');
+const Group = require('../models/GroupModel'); // Ensure the correct path to your Group model
 
 // Helper function to handle errors
 const handleError = (err, res) => {
@@ -143,8 +144,7 @@ exports.getFriends = async (req, res) => {
   }
 };
 
-
-// Function to find the mutual friends count between two users
+// Find the mutual friends count between two users
 const findMutualFriendsCount = async (userId1, userId2) => {
   try {
     const [friendsOfUser1, friendsOfUser2] = await Promise.all([
@@ -163,13 +163,12 @@ const findMutualFriendsCount = async (userId1, userId2) => {
       friend.user1.toString() === userId2.toString() ? friend.user2.toString() : friend.user1.toString()
     );
 
-    // Find mutual friends
     const mutualFriends = user1FriendsIds.filter(friendId => user2FriendsIds.includes(friendId));
 
     return mutualFriends.length;
   } catch (error) {
     console.error('Error finding mutual friends:', error);
-    return 0; // Return 0 if there's an error
+    return 0; 
   }
 };
 
@@ -183,7 +182,6 @@ exports.searchUser = async (req, res) => {
   }
 
   try {
-    // Run all necessary queries concurrently
     const [friends, incomingRequests, users, sentRequests] = await Promise.all([
       UserFriend.find({ $or: [{ user1: senderId }, { user2: senderId }] }).lean(),
       FriendRequest.find({ receiver: senderId, status: 'Pending' }).select('sender').lean(),
@@ -200,22 +198,75 @@ exports.searchUser = async (req, res) => {
 
     const requestSenderIds = incomingRequests.map(request => request.sender.toString());
 
-    // Filter out friends and users who have sent requests from the search results
     const filteredUsers = users.filter(user =>
       !friendIds.includes(user._id.toString()) && !requestSenderIds.includes(user._id.toString())
     );
 
-    // Mark users with a sent request and get mutual friends count
     const usersWithStatus = await Promise.all(filteredUsers.map(async user => {
       const mutualFriendsCount = await findMutualFriendsCount(senderId, user._id);
       return {
         ...user,
         requestSent: sentRequests.some(request => request.receiver.toString() === user._id.toString()),
-        mutualFriendsCount // Add mutual friends count
+        mutualFriendsCount 
       };
     }));
 
     res.json(usersWithStatus);
+  } catch (err) {
+    handleError(err, res);
+  }
+};
+
+// Search for groups excluding the current user's groups and invited groups
+exports.searchGroup = async (req, res) => {
+  const { query } = req.query;
+  const userId = req.user._id;
+
+  if (!query) {
+    return res.status(400).json({ message: 'Query parameter is required' });
+  }
+
+  try {
+    // Fetch all groups matching the search query
+    const groups = await Group.find({
+      name: { $regex: query, $options: 'i' } // Case-insensitive search
+    }).lean();
+
+    // Fetch groups the user is invited to
+    const invitedGroups = await Group.find({
+      invitedUsers: userId
+    }).select('_id').lean();
+
+    // Fetch groups the user has sent membership requests to
+    const memberRequests = await Group.find({
+      memberRequests: userId
+    }).select('_id').lean();
+
+    // Fetch groups the user is already a member of
+    const joinedGroups = await Group.find({
+      members: userId
+    }).select('_id').lean();
+
+    // Convert IDs to strings for easier comparison
+    const invitedGroupIds = invitedGroups.map(group => group._id.toString());
+    const requestedGroupIds = memberRequests.map(group => group._id.toString());
+    const joinedGroupIds = joinedGroups.map(group => group._id.toString());
+
+    // Filter out groups that the user is invited to, has requested, or is already a member of
+    const filteredGroups = groups.filter(group =>
+      !invitedGroupIds.includes(group._id.toString()) &&
+      !requestedGroupIds.includes(group._id.toString()) &&
+      !joinedGroupIds.includes(group._id.toString())
+    );
+
+    // Map the filtered groups to include the request status
+    const groupsWithStatus = filteredGroups.map(group => ({
+      ...group,
+      requestSent: requestedGroupIds.includes(group._id.toString()) // Check if a request was sent for this group
+    }));
+
+    // Return the filtered groups with request status
+    res.json(groupsWithStatus);
   } catch (err) {
     handleError(err, res);
   }

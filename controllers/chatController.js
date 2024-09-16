@@ -1,5 +1,8 @@
-const Message = require('../models/MessageModel');
 const UserFriend = require('../models/UserFriendModel');
+const Group = require('../models/GroupModel'); // Assuming you have the Group model set up
+const Message = require('../models/MessageModel');
+const User = require('../models/UserModel');
+const Category = require('../models/CategoryModel');
 
 exports.showChatPage = async (req, res) => {
     try {
@@ -69,3 +72,4 @@ exports.sendMessage = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+

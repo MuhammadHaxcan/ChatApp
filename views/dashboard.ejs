@@ -5,35 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
-        /* Additional styling for the dashboard */
         .dashboard-container {
             padding: 20px;
-        }
-        .search-section, .requests-section, .friends-section {
-            margin-bottom: 20px;
         }
         .search-container {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
         .search-container input {
             flex: 1;
             margin-right: 10px;
         }
-        .search-section .list-group-item {
+        .search-results {
+            margin-bottom: 20px;
+        }
+        .search-results .list-group-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 10px;
         }
-        .search-section .mutual-friends {
+        .search-results .mutual-friends {
             margin-right: 15px;
             color: #6c757d;
         }
-        .search-section .send-request-btn {
+        .search-results .send-request-btn {
             margin-left: 15px;
+        }
+        .requests-section, .friends-section {
+            margin-bottom: 20px;
         }
         .requests-section .list-group-item, .friends-section .list-group-item {
             display: flex;
@@ -52,6 +55,15 @@
             text-align: center;
             color: #007bff;
         }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: none;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -60,44 +72,45 @@
     <div class="container dashboard-container">
         <h1><%= title %></h1>
         
-        <!-- Search Users Section -->
-        <div class="search-section mb-4">
-            <h2>Search Users</h2>
-            <div class="search-container">
-                <input type="text" class="form-control" id="search-input" placeholder="Search for users..." />
-                <button class="btn btn-primary btn-sm">Search</button>
-            </div>
-            <div id="search-results">
-                <!-- Search results will be dynamically injected here -->
-                <!-- Example result item -->
-                <!-- <div class="list-group-item">UserName <span class="mutual-friends">3 Mutual Friends</span> <button class="btn btn-primary btn-sm send-request-btn">Send Request</button></div> -->
+        <div class="card mb-4">
+            <div class="card-header">Search Users</div>
+            <div class="card-body">
+                <div class="search-container">
+                    <select id="search-category" class="custom-select" style="width: auto; margin-right: 10px;">
+                        <option value="friends">Search Friends</option>
+                        <option value="groups">Search Groups</option>
+                    </select>
+                    <input type="text" class="form-control" id="search-input" placeholder="Search for users..." />
+                    <button class="btn btn-primary btn-sm">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div class="search-results" id="search-results">
+                    <!-- Search results will be dynamically injected here -->
+                </div>
             </div>
         </div>
         
         <div class="row">
-            <!-- Friend Requests Section -->
             <div class="col-md-6">
-                <div class="requests-section">
-                    <h2>Friend Requests</h2>
-                    <ul class="list-group">
-                        <!-- Placeholder for friend requests -->
-                        <!-- Example request item -->
-                        <!-- <li class="list-group-item">UserName <button class="btn btn-success btn-sm accept-request-btn">Accept</button> <button class="btn btn-danger btn-sm reject-request-btn">Reject</button></li> -->
-                        <li class="list-group-item no-data">No pending requests</li>
-                    </ul>
+                <div class="card requests-section">
+                    <div class="card-header">Friend Requests</div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            <li class="list-group-item no-data">No pending requests</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             
-            <!-- Friends List Section -->
             <div class="col-md-6">
-                <div class="friends-section">
-                    <h2>Friends</h2>
-                    <ul class="list-group">
-                        <!-- Placeholder for friends list -->
-                        <!-- Example friend item -->
-                        <!-- <li class="list-group-item">UserName</li> -->
-                        <li class="list-group-item no-data">No friends yet</li>
-                    </ul>
+                <div class="card friends-section">
+                    <div class="card-header">Friends</div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            <li class="list-group-item no-data">No friends yet</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>

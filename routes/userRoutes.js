@@ -6,6 +6,9 @@ const authMiddleware = require('../middleware/authMiddleware');
 // Search users
 router.get('/search', authMiddleware, userController.searchUser);
 
+// Search Group
+router.get('/searchgroup', authMiddleware, userController.searchGroup);
+
 // Send a friend request
 router.post('/sendrequest', authMiddleware, userController.sendFriendRequest);
 

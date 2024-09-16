@@ -11,6 +11,7 @@ const defaultRoutes = require('./routes/defaultRoutes');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const groupRoutes = require('./routes/groupRoutes');
 const socketHandler = require('./socket'); // Import socket handler
 
 const connectDB = require('./config/dbConfig');
@@ -51,6 +52,7 @@ app.use('/', defaultRoutes);
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 app.use('/chat', chatRoutes);
+app.use('/group', groupRoutes);
 
 // Set up Socket.io
 socketHandler(io); // Pass the io instance to the socket handler

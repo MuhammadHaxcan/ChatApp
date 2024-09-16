@@ -5,7 +5,7 @@
     .navbar-brand {
         font-family: 'Poppins', sans-serif;
         font-weight: 600;
-        font-size: 1.5rem;
+        font-size: 1.6rem;
         color: #007bff; /* Change color to something eye-catching */
     }
 
@@ -38,6 +38,19 @@
         color: #007bff !important; /* Match brand color on hover */
     }
 
+    /* Navbar toggler button styling */
+    .navbar-toggler {
+        border-color: #007bff; /* Border color for the toggler */
+    }
+    .navbar-toggler-icon {
+        background-image: url('data:image/svg+xml;charset=utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"%3E%3Cpath stroke="%23007bff" stroke-width="2" d="M5 7h20M5 15h20M5 23h20" /%3E%3C/svg%3E'); /* Custom icon color */
+    }
+
+    @media (max-width: 768px) {
+        .navbar-nav {
+            margin-top: 0.5rem;
+        }
+    }
 </style>
 
 <header>
@@ -64,12 +77,16 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/auth/register">Register</a>
                     </li>
-                <% } else { %>
+                <% } %>
+                <% if (user) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="/chat/user/<%= user._id %>">Chat</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/group/groups/">Groups</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/auth/logout">Logout</a>

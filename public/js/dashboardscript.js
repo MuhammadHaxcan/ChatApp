@@ -1,92 +1,111 @@
 $(document).ready(function() {
-    $('#search-input').on('input', function() {
-        const query = $(this).val().trim();
+    const $searchInput = $('#search-input');
+    const $searchCategory = $('#search-category');
+    const $searchResults = $('#search-results');
+
+    // Function to fetch search results for both friends and groups
+    function fetchSearchResults() {
+        const query = $searchInput.val().trim();
+        const category = $searchCategory.val();
+        const searchUrl = category === 'friends' ? '/user/search' : '/user/searchgroup';
 
         if (query.length > 2) {
-            $('#search-results').html('<p class="loading">Loading...</p>');
+            $searchResults.html('<p class="loading">Loading...</p>');
 
-            fetch(`/user/search?query=${encodeURIComponent(query)}`)
+            fetch(`${searchUrl}?query=${encodeURIComponent(query)}`)
                 .then(response => response.json())
                 .then(data => {
-                    const resultsContainer = $('#search-results');
-                    resultsContainer.empty();
+                    $searchResults.empty();
 
                     if (data.length) {
-                        data.forEach(user => {
-                            const buttonClass = user.requestSent ? 'btn-warning' : 'btn-primary';
-                            const buttonText = user.requestSent ? 'Cancel Request' : 'Send Request';
-                            const mutualFriendsText = user.mutualFriendsCount ? `${user.mutualFriendsCount} Mutual Friends` : 'No Mutual Friends';
+                        if (category === 'friends') {
+                            // Display friend search results
+                            data.forEach(user => {
+                                const buttonClass = user.requestSent ? 'btn-warning' : 'btn-primary';
+                                const buttonText = user.requestSent ? 'Cancel Request' : 'Send Request';
+                                const mutualFriendsText = user.mutualFriendsCount ? `${user.mutualFriendsCount} Mutual Friends` : 'No Mutual Friends';
 
-                            resultsContainer.append(
-                                `<div class="list-group-item" data-user-id="${user._id}">
-                                    ${user.username} 
-                                    <span class="mutual-friends">${mutualFriendsText}</span>
-                                    <button class="btn ${buttonClass} btn-sm send-request-btn">${buttonText}</button>
-                                </div>`
-                            );
-                        });
+                                $searchResults.append(
+                                    `<div class="list-group-item" data-user-id="${user._id}">
+                                        ${user.username}
+                                        <span class="mutual-friends">${mutualFriendsText}</span>
+                                        <button class="btn ${buttonClass} btn-sm send-request-btn">${buttonText}</button>
+                                    </div>`
+                                );
+                            });
+                        } else {
+                            // Display group search results
+                            data.forEach(group => {
+                                $searchResults.append(
+                                    `<div class="list-group-item" data-group-id="${group._id}">
+                                        ${group.name} - <span class="category">${group.category}</span>
+                                    </div>`
+                                );
+                            });
+                        }
                     } else {
-                        resultsContainer.html('<p class="no-data">No users found</p>');
+                        $searchResults.html('<p class="no-data">No results found</p>');
                     }
                 })
                 .catch(() => {
-                    $('#search-results').html('<p class="no-data">Error retrieving users</p>');
+                    $searchResults.html('<p class="no-data">Error retrieving results</p>');
                 });
         } else {
-            $('#search-results').empty();
+            $searchResults.empty();
         }
-    });
+    }
 
+    // Function to load incoming friend requests
     function loadIncomingRequests() {
-        $('.requests-section .list-group').html('<p class="loading">Loading requests...</p>');
+        const $requestsContainer = $('.requests-section .list-group');
+        $requestsContainer.html('<p class="loading">Loading requests...</p>');
 
         fetch('/user/incomingrequests')
             .then(response => response.json())
             .then(data => {
-                const requestsContainer = $('.requests-section .list-group');
-                requestsContainer.empty();
+                $requestsContainer.empty();
 
                 if (data.length) {
                     data.forEach(request => {
-                        requestsContainer.append(
+                        $requestsContainer.append(
                             `<li class="list-group-item" data-request-id="${request._id}">
-                                ${request.sender.username} 
+                                ${request.sender.username}
                                 <button class="btn btn-success btn-sm accept-request-btn">Accept</button>
                                 <button class="btn btn-danger btn-sm reject-request-btn">Reject</button>
                             </li>`
                         );
                     });
                 } else {
-                    requestsContainer.html('<li class="list-group-item no-data">No pending requests</li>');
+                    $requestsContainer.html('<li class="list-group-item no-data">No pending requests</li>');
                 }
             })
             .catch(() => {
-                $('.requests-section .list-group').html('<li class="list-group-item no-data">Error loading requests</li>');
+                $requestsContainer.html('<li class="list-group-item no-data">Error loading requests</li>');
             });
     }
 
+    // Function to load friends list
     function loadFriends() {
+        const $friendsList = $('.friends-section .list-group');
         fetch('/user/friends')
             .then(response => response.json())
             .then(friends => {
-                const friendsList = $('.friends-section .list-group');
-                friendsList.empty();
+                $friendsList.empty();
 
                 if (friends.length > 0) {
                     friends.forEach(friend => {
-                        friendsList.append(
-                            `<li class="list-group-item">${friend.username}</li>`
-                        );
+                        $friendsList.append(`<li class="list-group-item">${friend.username}</li>`);
                     });
                 } else {
-                    friendsList.append('<li class="list-group-item no-data">No friends yet</li>');
+                    $friendsList.append('<li class="list-group-item no-data">No friends yet</li>');
                 }
             })
             .catch(() => {
-                $('.friends-section .list-group').html('<li class="list-group-item no-data">Error loading friends</li>');
+                $friendsList.html('<li class="list-group-item no-data">Error loading friends</li>');
             });
     }
 
+    // Accept friend request
     $(document).on('click', '.accept-request-btn', function() {
         const button = $(this);
         const requestId = button.closest('.list-group-item').data('request-id');
@@ -95,9 +114,7 @@ $(document).ready(function() {
 
         fetch('/user/acceptrequest', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ requestId })
         })
         .then(response => {
@@ -116,6 +133,7 @@ $(document).ready(function() {
         });
     });
 
+    // Reject friend request
     $(document).on('click', '.reject-request-btn', function() {
         const button = $(this);
         const requestId = button.closest('.list-group-item').data('request-id');
@@ -124,9 +142,7 @@ $(document).ready(function() {
 
         fetch('/user/rejectrequest', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ requestId })
         })
         .then(response => {
@@ -144,6 +160,7 @@ $(document).ready(function() {
         });
     });
 
+    // Send/cancel friend request
     $(document).on('click', '.send-request-btn', function() {
         const button = $(this);
         const userId = button.closest('.list-group-item').data('user-id');
@@ -153,9 +170,7 @@ $(document).ready(function() {
 
         fetch(isCancelRequest ? '/user/cancelrequest' : '/user/sendrequest', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ receiverId: userId })
         })
         .then(response => {
@@ -174,6 +189,10 @@ $(document).ready(function() {
         });
     });
 
+    // Event listener for search input changes
+    $searchInput.on('input', fetchSearchResults);
+
+    // Initial data loading
     loadIncomingRequests();
     loadFriends();
 });
